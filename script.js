@@ -203,6 +203,11 @@ function atualizarTela() {
     let htmlBloqueados = "";
     let htmlLiberados = "";
 
+    // Controla a troca de palete dentro de cada tabela, para desenhar a linha
+    // divisória visual sempre que um novo palete começar na lista.
+    let ultimoPaleteBloqueados = null;
+    let ultimoPaleteLiberados = null;
+
     todosOsItens.forEach(function (item, index) {
         let classeConcluido = item.concluido ? "concluido" : "";
         let checkIcon = item.concluido ? "✅" : "⬜";
@@ -211,21 +216,34 @@ function atualizarTela() {
 
         let estaBloqueado = LISTA_BLOQUEADOS.includes(item.material);
 
-        // Regra visual de alerta para os materiais retidos
-        let estiloLinha = "";
-        if (estaBloqueado && !item.concluido) {
-            // Só pinta de vermelho se o item ainda não tiver sido concluído/impresso
-            estiloLinha = 'style="background-color: #fce8e6; color: #a91c1c;"';
+        // Classe de alerta para os materiais retidos (contraste reforçado via CSS)
+        let classeBloqueio = (estaBloqueado && !item.concluido) ? "linha-bloqueada" : "";
+
+        // Ícone fixo de bloqueio: garante a leitura da informação mesmo sem depender só da cor
+        let iconeBloqueio = estaBloqueado ? '<span class="icone-bloqueio" title="Material bloqueado">⛔</span>' : "";
+
+        // Marca a primeira linha de cada novo palete dentro desta tabela específica
+        let classeNovoPalete = "";
+        if (estaBloqueado) {
+            if (ultimoPaleteBloqueados !== null && ultimoPaleteBloqueados !== item.numPalete) {
+                classeNovoPalete = "novo-palete";
+            }
+            ultimoPaleteBloqueados = item.numPalete;
+        } else {
+            if (ultimoPaleteLiberados !== null && ultimoPaleteLiberados !== item.numPalete) {
+                classeNovoPalete = "novo-palete";
+            }
+            ultimoPaleteLiberados = item.numPalete;
         }
 
         let linhaHtml = `
-            <tr class="linha-item ${classeConcluido}" ${estiloLinha}>
+            <tr class="linha-item ${classeConcluido} ${classeBloqueio} ${classeNovoPalete}">
                 <td style="text-align: center; font-size: 16px;" onclick="alternarStatus(${index})">${checkIcon}</td>
                 <td onclick="alternarStatus(${index})"><span class="badge-palete">${item.palete}</span></td>
                 <td>
                     <div class="bloco-copiar">
                         <button class="btn-copiar" onclick="copiarCodigoDireto('${item.material}', ${index}, event)">📋</button>
-                        <strong>${item.material}</strong>
+                        ${iconeBloqueio}<strong>${item.material}</strong>
                     </div>
                 </td>
                 <td onclick="alternarStatus(${index})">${item.descricao}</td>
@@ -245,6 +263,14 @@ function atualizarTela() {
 
     document.getElementById("qtd-pendentes").innerText = pendentes;
     document.getElementById("qtd-concluidos").innerText = concluidos;
+
+    // Estado comemorativo: destaca a caixa de concluídos quando não sobra nenhum item pendente
+    let caixaConcluidos = document.getElementById("caixa-concluidos");
+    let textoConcluidos = document.getElementById("texto-concluidos");
+    let tudoConcluido = todosOsItens.length > 0 && pendentes === 0;
+
+    caixaConcluidos.classList.toggle("tudo-concluido", tudoConcluido);
+    textoConcluidos.innerText = tudoConcluido ? "🎉 Tudo Concluído:" : "✅ Itens Concluídos:";
 }
 
 /* --------------------------------------------------------------------------

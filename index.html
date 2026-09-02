@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Triagem Automatizada de Paletes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 
     <!-- Biblioteca de leitura de planilhas (.xlsx/.xls) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -40,8 +41,8 @@
                 <div style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
                     ⬜ Itens Pendentes: <strong id="qtd-pendentes" style="font-size: 20px; color: #b7791f;">0</strong>
                 </div>
-                <div style="background-color: #d1e7dd; border: 1px solid #badbcc; color: #0f5132; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
-                    ✅ Itens Concluídos: <strong id="qtd-concluidos" style="font-size: 20px; color: #198754;">0</strong>
+                <div id="caixa-concluidos" class="caixa-concluidos" style="background-color: #d1e7dd; border: 1px solid #badbcc; color: #0f5132; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold; transition: 0.3s;">
+                    <span id="texto-concluidos">✅ Itens Concluídos:</span> <strong id="qtd-concluidos" style="font-size: 20px; color: #198754;">0</strong>
                 </div>
                 <div style="background-color: #e2e8f0; border: 1px solid #cbd5e1; color: #334155; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
                     ⏱️ Tempo Operacional: <strong id="cronometro" style="font-size: 20px; color: #475569;">00:00:00</strong>

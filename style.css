@@ -121,6 +121,9 @@ td {
 th {
     background-color: #f1f5f9;
     color: #1e3a8a;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 /* Larguras proporcionais das colunas: Status | Palete | Material | Descrição | Quantidade */
@@ -175,6 +178,22 @@ tr.concluido td {
     font-weight: bold;
 }
 
+/* Linha de material bloqueado: fundo mais saturado + texto mais escuro para contraste adequado */
+tr.linha-bloqueada td {
+    background-color: #fbcfcb;
+    color: #7f1d1d;
+}
+
+/* Ícone fixo de bloqueio: reforça a informação sem depender só da cor (acessibilidade) */
+.icone-bloqueio {
+    margin-right: 4px;
+}
+
+/* Marca visual do início de um novo palete dentro da lista, para facilitar o escaneamento */
+tr.novo-palete td {
+    border-top: 3px solid #94a3b8;
+}
+
 /* --- Botão de cópia rápida do código do material --- */
 .bloco-copiar {
     display: inline-flex;
@@ -197,4 +216,15 @@ tr.concluido td {
 .btn-copiar:hover {
     background: #cbd5e1;
     border-color: #94a3b8;
+}
+
+/* --- Estado de conclusão total (todos os itens concluídos) --- */
+.caixa-concluidos.tudo-concluido {
+    background-color: #198754 !important;
+    border-color: #146c43 !important;
+    color: #ffffff !important;
+}
+
+.caixa-concluidos.tudo-concluido strong {
+    color: #ffffff !important;
 }
