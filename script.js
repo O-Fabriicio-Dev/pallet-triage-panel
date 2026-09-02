@@ -203,11 +203,6 @@ function atualizarTela() {
     let htmlBloqueados = "";
     let htmlLiberados = "";
 
-    // Controla a troca de palete dentro de cada tabela, para desenhar a linha
-    // divisória visual sempre que um novo palete começar na lista.
-    let ultimoPaleteBloqueados = null;
-    let ultimoPaleteLiberados = null;
-
     todosOsItens.forEach(function (item, index) {
         let classeConcluido = item.concluido ? "concluido" : "";
         let checkIcon = item.concluido ? "✅" : "⬜";
@@ -222,22 +217,8 @@ function atualizarTela() {
         // Ícone fixo de bloqueio: garante a leitura da informação mesmo sem depender só da cor
         let iconeBloqueio = estaBloqueado ? '<span class="icone-bloqueio" title="Material bloqueado">⛔</span>' : "";
 
-        // Marca a primeira linha de cada novo palete dentro desta tabela específica
-        let classeNovoPalete = "";
-        if (estaBloqueado) {
-            if (ultimoPaleteBloqueados !== null && ultimoPaleteBloqueados !== item.numPalete) {
-                classeNovoPalete = "novo-palete";
-            }
-            ultimoPaleteBloqueados = item.numPalete;
-        } else {
-            if (ultimoPaleteLiberados !== null && ultimoPaleteLiberados !== item.numPalete) {
-                classeNovoPalete = "novo-palete";
-            }
-            ultimoPaleteLiberados = item.numPalete;
-        }
-
         let linhaHtml = `
-            <tr class="linha-item ${classeConcluido} ${classeBloqueio} ${classeNovoPalete}">
+            <tr class="linha-item ${classeConcluido} ${classeBloqueio}">
                 <td style="text-align: center; font-size: 16px;" onclick="alternarStatus(${index})">${checkIcon}</td>
                 <td onclick="alternarStatus(${index})"><span class="badge-palete">${item.palete}</span></td>
                 <td>
