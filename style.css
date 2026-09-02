@@ -19,8 +19,26 @@ body {
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
     width: 100%;
+    max-width: 1600px; /* limite só em monitores muito largos, evita linhas gigantes */
+}
+
+/* Em telas pequenas, reduz o respiro lateral para aproveitar melhor o espaço */
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    /* Permite rolagem horizontal na tabela em vez de espremer o conteúdo */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }
 
 h1 {
