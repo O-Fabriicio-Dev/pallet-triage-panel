@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Triagem Automatizada de Paletes</title>
+
+    <!-- Biblioteca de leitura de planilhas (.xlsx/.xls) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Estilos da aplicação -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>📋 Triagem Automatizada de Itens (Multi-Abas)</h1>
+
+        <div class="upload-secao" onclick="document.getElementById('input-xml').click()">
+            <label style="cursor: pointer; font-weight: 600; color: #2563eb; font-size: 16px;">
+                📁 Clique aqui para selecionar o arquivo Excel (.xlsx, .xls) ou XML exportado do Excel
+            </label>
+            <input type="file" id="input-xml" accept=".xml, .xlsx, .xls">
+            <p id="nome-arquivo" style="font-size: 14px; color: #64748b; margin-top: 8px; font-weight: 500;"></p>
+        </div>
+
+        <div id="painel-operacional" style="display: none;">
+            <div class="controles-tabela">
+                <div>
+                    <span style="font-weight: 700; color: #1e3a8a; font-size: 15px;">📌 Modo Operacional: Sequência de Paletes</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="imprimirMateriaisBloqueados()" style="background-color: #dc2626;">🖨️ Imprimir Bloqueados</button>
+                    <button onclick="limparPainel()">Limpar Arquivo</button>
+                </div>
+            </div>
+
+            <!-- Painel de contadores + cronômetro -->
+            <div style="display: flex; gap: 15px; margin: 15px 0;">
+                <div style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
+                    ⬜ Itens Pendentes: <strong id="qtd-pendentes" style="font-size: 20px; color: #b7791f;">0</strong>
+                </div>
+                <div style="background-color: #d1e7dd; border: 1px solid #badbcc; color: #0f5132; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
+                    ✅ Itens Concluídos: <strong id="qtd-concluidos" style="font-size: 20px; color: #198754;">0</strong>
+                </div>
+                <div style="background-color: #e2e8f0; border: 1px solid #cbd5e1; color: #334155; padding: 12px 20px; border-radius: 6px; flex: 1; font-size: 15px; font-weight: bold;">
+                    ⏱️ Tempo Operacional: <strong id="cronometro" style="font-size: 20px; color: #475569;">00:00:00</strong>
+                </div>
+            </div>
+
+            <p>💡 <b>Dicas operacionais:</b> Clique em cima das informações para marcar como concluída. Clique em 📋 para copiar o código.</p>
+
+            <h2 style="color: #dc2626; text-align: left; font-size: 16px; margin: 22px 0 8px;">⛔ Materiais Bloqueados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">Status</th>
+                        <th style="width: 18%;">Palete Origem</th>
+                        <th style="width: 20%;">Material</th>
+                        <th>Descrição</th>
+                        <th style="width: 15%;">Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-bloqueados"></tbody>
+            </table>
+
+            <h2 style="color: #1e3a8a; text-align: left; font-size: 16px; margin: 28px 0 8px;">📦 Itens Liberados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">Status</th>
+                        <th style="width: 18%;">Palete Origem</th>
+                        <th style="width: 20%;">Material</th>
+                        <th>Descrição</th>
+                        <th style="width: 15%;">Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-liberados"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Lógica da aplicação -->
+    <script src="script.js"></script>
+</body>
+</html>
