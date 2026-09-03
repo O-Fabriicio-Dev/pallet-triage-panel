@@ -34,6 +34,25 @@ const LISTA_BLOQUEADOS = [
 let intervaloCronometro = null;
 let segundosOperacao = 0;
 
+// Chave usada para persistir o progresso da triagem no navegador
+const CHAVE_ESTADO_SALVO = "triagemPaletesEstado";
+
+/* --------------------------------------------------------------------------
+   Alertas estilizados (substituem os alert() nativos para erros de arquivo)
+   -------------------------------------------------------------------------- */
+
+function mostrarAlerta(mensagem, tipo) {
+    let caixa = document.getElementById("caixa-alerta");
+    caixa.className = "caixa-alerta " + (tipo || "aviso");
+    caixa.innerHTML = (tipo === "erro" ? "⛔ " : "⚠️ ") + mensagem;
+    caixa.style.display = "flex";
+}
+
+function esconderAlerta() {
+    let caixa = document.getElementById("caixa-alerta");
+    caixa.style.display = "none";
+}
+
 /* --------------------------------------------------------------------------
    2. Upload e leitura do arquivo (XLSX/XLS/XML)
    -------------------------------------------------------------------------- */
@@ -43,6 +62,14 @@ document.getElementById('input-xml').addEventListener('change', function (e) {
     if (!arquivos || arquivos.length === 0) return;
 
     let arquivo = arquivos[0];
+    esconderAlerta();
+
+    // Validação básica: arquivo vazio (0 bytes) já indica problema antes mesmo de tentar ler
+    if (arquivo.size === 0) {
+        mostrarAlerta("O arquivo selecionado está vazio (0 KB). Verifique se ele foi exportado corretamente.", "erro");
+        return;
+    }
+
     document.getElementById('nome-arquivo').innerText = `Arquivo carregado: ${arquivo.name}`;
 
     let extensao = arquivo.name.split('.').pop().toLowerCase();
@@ -52,21 +79,42 @@ document.getElementById('input-xml').addEventListener('change', function (e) {
         // Leitura binária necessária para arquivos .xlsx/.xls (formato compactado)
         let leitor = new FileReader();
         leitor.onload = function (evento) {
-            let dadosBinarios = evento.target.result;
-            let workbook = XLSX.read(dadosBinarios, { type: 'array' });
-            processarWorkbookXlsx(workbook);
+            try {
+                let dadosBinarios = evento.target.result;
+                let workbook = XLSX.read(dadosBinarios, { type: 'array' });
+
+                if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+                    mostrarAlerta("A planilha foi lida, mas não contém nenhuma aba de dados.", "erro");
+                    return;
+                }
+
+                processarWorkbookXlsx(workbook);
+            } catch (erroLeitura) {
+                // Arquivo corrompido, senha-protegido, ou não é realmente um Excel válido
+                mostrarAlerta("Não foi possível ler este arquivo. Ele pode estar corrompido, protegido por senha, ou não ser um Excel válido.", "erro");
+            }
+        };
+        leitor.onerror = function () {
+            mostrarAlerta("Ocorreu um erro ao tentar abrir o arquivo no navegador. Tente selecioná-lo novamente.", "erro");
         };
         leitor.readAsArrayBuffer(arquivo);
     } else if (extensao === "xml") {
         // Leitura de texto para o formato XML antigo do Excel (SpreadsheetML)
         let leitor = new FileReader();
         leitor.onload = function (evento) {
-            let textoXml = evento.target.result;
-            processarTextoXmlSemFiltros(textoXml);
+            try {
+                let textoXml = evento.target.result;
+                processarTextoXmlSemFiltros(textoXml);
+            } catch (erroLeitura) {
+                mostrarAlerta("Não foi possível interpretar este XML. Verifique se ele foi exportado corretamente do Excel.", "erro");
+            }
+        };
+        leitor.onerror = function () {
+            mostrarAlerta("Ocorreu um erro ao tentar abrir o arquivo no navegador. Tente selecioná-lo novamente.", "erro");
         };
         leitor.readAsText(arquivo, 'UTF-8');
     } else {
-        alert("Formato de arquivo não suportado. Selecione um arquivo .xlsx, .xls ou .xml.");
+        mostrarAlerta("Formato de arquivo não suportado. Selecione um arquivo .xlsx, .xls ou .xml.", "erro");
     }
 });
 
@@ -116,9 +164,11 @@ function finalizarProcessamento(origem) {
     if (todosOsItens.length > 0) {
         reordenarTabela();
         document.getElementById("painel-operacional").style.display = "block";
-        iniciarCronometro(); // Liga o tempo de operação
+        segundosOperacao = 0; // Novo arquivo carregado = novo cronômetro
+        iniciarCronometro();
+        salvarEstado();
     } else {
-        alert(`Aviso: O arquivo ${origem} foi lido com sucesso, mas a estrutura interna não foi processada.`);
+        mostrarAlerta(`O arquivo ${origem} foi lido, mas nenhuma linha com o formato esperado (palete + código de material) foi encontrada. Confira se as colunas da planilha não foram alteradas.`, "erro");
     }
 }
 
@@ -252,6 +302,8 @@ function atualizarTela() {
 
     caixaConcluidos.classList.toggle("tudo-concluido", tudoConcluido);
     textoConcluidos.innerText = tudoConcluido ? "🎉 Tudo Concluído:" : "✅ Itens Concluídos:";
+
+    salvarEstado();
 }
 
 /* --------------------------------------------------------------------------
@@ -304,8 +356,12 @@ function limparPainel() {
     document.getElementById('input-xml').value = "";
     document.getElementById('nome-arquivo').innerText = "";
     document.getElementById("painel-operacional").style.display = "none";
+    esconderAlerta();
 
     clearInterval(intervaloCronometro); // Para o cronômetro ao limpar o painel
+    segundosOperacao = 0;
+
+    localStorage.removeItem(CHAVE_ESTADO_SALVO); // Remove o progresso salvo — é um novo início
 
     atualizarTela();
 }
@@ -399,19 +455,93 @@ function imprimirMateriaisBloqueados() {
 
 function iniciarCronometro() {
     clearInterval(intervaloCronometro);
-    segundosOperacao = 0;
-    document.getElementById("cronometro").innerText = "00:00:00";
+    document.getElementById("cronometro").innerText = formatarTempo(segundosOperacao);
 
     intervaloCronometro = setInterval(function () {
         segundosOperacao++;
-        let horas = Math.floor(segundosOperacao / 3600);
-        let minutos = Math.floor((segundosOperacao % 3600) / 60);
-        let segundos = segundosOperacao % 60;
+        document.getElementById("cronometro").innerText = formatarTempo(segundosOperacao);
 
-        let hFormatada = horas < 10 ? "0" + horas : horas;
-        let mFormatada = minutos < 10 ? "0" + minutos : minutos;
-        let sFormatada = segundos < 10 ? "0" + segundos : segundos;
-
-        document.getElementById("cronometro").innerText = hFormatada + ":" + mFormatada + ":" + sFormatada;
+        // Salva o progresso a cada 5s, para não sobrecarregar o localStorage com escritas por segundo
+        if (segundosOperacao % 5 === 0) {
+            salvarEstado();
+        }
     }, 1000);
 }
+
+function formatarTempo(totalSegundos) {
+    let horas = Math.floor(totalSegundos / 3600);
+    let minutos = Math.floor((totalSegundos % 3600) / 60);
+    let segundos = totalSegundos % 60;
+
+    let hFormatada = horas < 10 ? "0" + horas : horas;
+    let mFormatada = minutos < 10 ? "0" + minutos : minutos;
+    let sFormatada = segundos < 10 ? "0" + segundos : segundos;
+
+    return hFormatada + ":" + mFormatada + ":" + sFormatada;
+}
+
+/* --------------------------------------------------------------------------
+   8. Persistência local (retomar a triagem após atualizar a página)
+   -------------------------------------------------------------------------- */
+
+// Grava o estado atual da triagem no navegador. Só salva quando há um arquivo
+// carregado — evita persistir uma tela vazia.
+function salvarEstado() {
+    if (!todosOsItens || todosOsItens.length === 0) return;
+
+    try {
+        let estado = {
+            itens: todosOsItens,
+            nomeArquivo: document.getElementById('nome-arquivo').innerText,
+            segundosOperacao: segundosOperacao,
+            salvoEm: new Date().toISOString()
+        };
+        localStorage.setItem(CHAVE_ESTADO_SALVO, JSON.stringify(estado));
+    } catch (erro) {
+        // Ex.: localStorage cheio ou bloqueado pelo navegador — a triagem continua
+        // funcionando normalmente, só não fica salva entre atualizações de página.
+        console.warn("Não foi possível salvar o progresso localmente:", erro);
+    }
+}
+
+// Ao abrir a página, verifica se existe uma triagem salva de uma sessão anterior
+// e pergunta ao operador se ele quer continuar de onde parou.
+function verificarEstadoSalvo() {
+    let bruto;
+    try {
+        bruto = localStorage.getItem(CHAVE_ESTADO_SALVO);
+    } catch (erro) {
+        return; // localStorage indisponível (ex.: modo privado em alguns navegadores)
+    }
+    if (!bruto) return;
+
+    let estado;
+    try {
+        estado = JSON.parse(bruto);
+    } catch (erro) {
+        localStorage.removeItem(CHAVE_ESTADO_SALVO);
+        return;
+    }
+
+    if (!estado.itens || estado.itens.length === 0) return;
+
+    let dataFormatada = new Date(estado.salvoEm).toLocaleString('pt-BR');
+    let continuar = confirm(
+        `Encontramos uma triagem em andamento, salva em ${dataFormatada} (${estado.nomeArquivo || "arquivo anterior"}).\n\nDeseja continuar de onde parou?`
+    );
+
+    if (!continuar) {
+        localStorage.removeItem(CHAVE_ESTADO_SALVO);
+        return;
+    }
+
+    todosOsItens = estado.itens;
+    segundosOperacao = estado.segundosOperacao || 0;
+    document.getElementById('nome-arquivo').innerText = estado.nomeArquivo || "";
+    document.getElementById("painel-operacional").style.display = "block";
+
+    atualizarTela();
+    iniciarCronometro();
+}
+
+document.addEventListener('DOMContentLoaded', verificarEstadoSalvo);

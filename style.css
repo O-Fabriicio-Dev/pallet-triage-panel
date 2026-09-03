@@ -1,0 +1,291 @@
+/* ==========================================================================
+   Painel de Triagem Automatizada de Paletes
+   style.css — estilos globais da aplicação
+   ========================================================================== */
+
+/* --- Layout base da página --- */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1600px; /* limite só em monitores muito largos, evita linhas gigantes */
+}
+
+/* --- Alertas estilizados (validação de arquivo) --- */
+.caixa-alerta {
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: -10px 0 20px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+}
+
+.caixa-alerta.aviso {
+    background-color: #fff3cd;
+    border: 1px solid #ffe69c;
+    color: #664d03;
+}
+
+.caixa-alerta.erro {
+    background-color: #f8d7da;
+    border: 1px solid #f1aeb5;
+    color: #842029;
+}
+
+/* Em tablets e coletores de dados: alvos de toque maiores e layout que não quebra */
+@media (max-width: 1024px) {
+    .controles-tabela {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .controles-tabela > div {
+        width: 100%;
+    }
+
+    .controles-tabela > div:last-child {
+        display: flex;
+        gap: 10px;
+    }
+
+    .controles-tabela > div:last-child button {
+        flex: 1;
+    }
+
+    button {
+        min-height: 46px;
+        font-size: 15px;
+    }
+
+    /* Área de toque maior na célula de status, que é o clique mais frequente na operação */
+    td:first-child {
+        padding: 16px 12px;
+        font-size: 20px !important;
+    }
+
+    tr.linha-item td {
+        padding: 14px 12px;
+    }
+
+    /* As três caixas de indicadores empilham em vez de espremer em tela estreita */
+    div[style*="display: flex; gap: 15px"] {
+        flex-wrap: wrap;
+    }
+}
+
+/* Em telas pequenas, reduz o respiro lateral para aproveitar melhor o espaço */
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    /* Permite rolagem horizontal na tabela em vez de espremer o conteúdo */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+h1 {
+    color: #1e3a8a;
+    text-align: center;
+    margin-top: 0;
+}
+
+/* --- Área de upload do arquivo --- */
+.upload-secao {
+    background-color: #eff6ff;
+    border: 2px dashed #2563eb;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.upload-secao:hover {
+    background-color: #dbeafe;
+}
+
+.upload-secao input {
+    display: none;
+}
+
+/* --- Barra de controles (botões de ação) --- */
+.controles-tabela {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background-color: #eff6ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+}
+
+select,
+button {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button {
+    background-color: #64748b;
+    color: white;
+    border: none;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #475569;
+}
+
+/* --- Tabelas de itens --- */
+table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+td {
+    word-wrap: break-word;
+}
+
+th {
+    background-color: #f1f5f9;
+    color: #1e3a8a;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Larguras proporcionais das colunas: Status | Palete | Material | Descrição | Quantidade */
+th:nth-child(1),
+td:nth-child(1) {
+    width: 6%;
+    text-align: center;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+    width: 14%;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+    width: 18%;
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+    width: 48%;
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+    width: 14%;
+}
+
+tr.linha-item {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+tr.linha-item:hover td {
+    background-color: #f8fafc;
+}
+
+tr.concluido td {
+    background-color: #d1e7dd !important;
+    color: #0f5132;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.badge-palete {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Linha de material bloqueado: fundo mais saturado + texto mais escuro para contraste adequado */
+tr.linha-bloqueada td {
+    background-color: #fbcfcb;
+    color: #7f1d1d;
+}
+
+/* Ícone fixo de bloqueio: reforça a informação sem depender só da cor (acessibilidade) */
+.icone-bloqueio {
+    margin-right: 4px;
+}
+
+/* --- Botão de cópia rápida do código do material --- */
+.bloco-copiar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-copiar {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: normal;
+    color: #333;
+    transition: 0.2s;
+}
+
+.btn-copiar:hover {
+    background: #cbd5e1;
+    border-color: #94a3b8;
+}
+
+/* --- Estado de conclusão total (todos os itens concluídos) --- */
+.caixa-concluidos.tudo-concluido {
+    background-color: #198754 !important;
+    border-color: #146c43 !important;
+    color: #ffffff !important;
+}
+
+.caixa-concluidos.tudo-concluido strong {
+    color: #ffffff !important;
+}
