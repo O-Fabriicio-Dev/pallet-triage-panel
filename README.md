@@ -24,7 +24,7 @@ Aplicação web para triagem operacional de materiais em paletes, com detecção
 
 Basta abrir o `index.html` em um navegador — não há dependências de build.
 
-No **StackBlitz**, importe o repositório e utilize o preview estático (HTML/CSS/JS).
+
 
 ## 🛠️ Tecnologias
 
