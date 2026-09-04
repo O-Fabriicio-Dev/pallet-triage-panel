@@ -236,7 +236,8 @@ function reordenarTabela() {
         if (a.numPalete !== b.numPalete) {
             return a.numPalete - b.numPalete;
         }
-        return a.ordemOriginal - b.ordemOriginal;
+        // Dentro do mesmo palete, ordena os itens em ordem crescente pelo código do material
+        return Number(a.material) - Number(b.material);
     });
     atualizarTela();
 }
